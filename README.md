@@ -23,7 +23,7 @@ In order to use any version of the business network in the [Composer Playground]
 In order to deploy into a local Fabric enviormennt please clone the repository and follow the instructions
 
 `````
-$ git clone https://github.com/ccastroiragorri/blockchainforopenscience
+https://github.com/Blockchain4openscience/hyperledger
 `````
 We follow the hyperledger-composer tutorial on [Deploying to a multi-organization Hyperledger Fabric](https://hyperledger.github.io/composer/latest/tutorials/deploy-to-fabric-multi-org).
 
@@ -38,6 +38,3 @@ Once the repositoty has been cloned then we can generate Fabric network/ securit
 `````
 ./startFabric.sh
 `````
-
-#hyperledger
-#hyperledger
