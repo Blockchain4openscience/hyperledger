@@ -135,6 +135,23 @@ The generated API is connected to the deployed blockchain and business network.
 
 11. Use the rest server to test the business network, using the test examples from the playground. The test examples generate two `participants:Researcher` and two `assets: ResearchOJ` (research objetcs). These will be created using each of the active API that have been deployed by each organization. This test ilustrates how both API's create participants, assets and transaccions among them.
 
+## Stopping Hyperledger Fabric and deleting network cards
+
+12. To stop the runtime and delete containers, run the following command
+`````
+./byfn.sh -m down
+`````
+13. Delete any 'old' business network cards that may exist in your wallet from previous Fabric environments. 
+`````
+composer card delete -c Card Name
+`````
+14. Delete your file system card store in your HOME directory as follows:
+`````
+rm -fr $HOME/.composer
+`````
+
+
+
 
 
 
