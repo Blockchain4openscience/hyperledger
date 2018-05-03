@@ -23,7 +23,7 @@ In order to use any version of the business network in the [Composer Playground]
 In order to deploy into a local Fabric enviormennt please clone the repository and follow the instructions
 
 `````
-$ git clone https://github.com/Blockchain4openscience/hyperledger
+git clone https://github.com/Blockchain4openscience/hyperledger
 `````
 We follow the hyperledger-composer tutorial on [Deploying to a multi-organization Hyperledger Fabric](https://hyperledger.github.io/composer/latest/tutorials/deploy-to-fabric-multi-org).
 
@@ -35,11 +35,11 @@ The current Hyperledger Fabric Network that will serve as a skeleton design to t
 
 Once the repository has been cloned then we can generate Fabric network/ security artifacts according to design of the network and following the steps mentioned in the hyperledger-composer tutorial: [Deploying a Hyperledger Composer blockchain business network to Hyperledger Fabric (multiple organizations)](https://hyperledger.github.io/composer/latest/tutorials/deploy-to-fabric-multi-org)
 
-The tutorial is made up of prerequisites and 19 steps that generates the network, the artifacts, cards and the element required for each organization. The steps also include the deployment of the business network to the nodes of the organization. 
+The tutorial is made up of prerequisites and *19 steps* that generates the network, the artifacts, cards and the element required for each organization. The steps also include the deployment of the business network to the nodes of the organization. We will make reference to the steps in the tutorial by mentioning them in *italic*. 
 
 We modify some of these steps in order to install/deploy the business network `bforos-bnav1`,
 
-1. In step one the following commands,
+1. In *step one* the following commands,
 `````
 ./byfn.sh -m generate
 
@@ -47,18 +47,18 @@ We modify some of these steps in order to install/deploy the business network `b
 `````
 generate Fabric network (given the design mentioned above) and security artifacts (certificates for all the network components and private keys). For convenience these artifacts will be kept togheter in a temporary file under `/tmp/composer/`.
 
-2. - 4. In steps two through four, we must manually create a connection profile that includes the Certificate Authority (CA) certificates for all of the network components in order to connect to those network components (note that every time that we bootstrap the network these certificates will change an hence we must update the connection profile). 
+2. In *steps two through four*, we must manually create a connection profile that includes the Certificate Authority (CA) certificates for all of the network components in order to connect to those network components (note that every time that we bootstrap the network these certificates will change an hence we must update the connection profile). 
 
 This connection profile now describes the fabric network setup, all the peers, orderers and certificate authorities that are part of the network, it defines all the organizations that are participating in the network and also defines the channel's on this network. Hyperledger Composer can only interact with a single channel so only one channel should be defined. We must specify the connection profile for each or the organizations, `byfn-network-org1.json` and `byfn-network-org2.json`.
 
-5. - 6. In steps five and six we must locate the the certificate and private key for the Hyperledger Fabric administrator for Org1 and Org2 in order to copy this artifacts to the temporary folder.
+3. In *steps five and six* we must locate the the certificate and private key for the Hyperledger Fabric administrator for Org1 and Org2 in order to copy this artifacts to the temporary folder.
 
 ## Installing Business Network onto Fabric running network 
 
-7. - 10. In steps seven through ten we must create and import the business network cards for the Hyperledger Fabric administrator for Org1 and Org2, respectively.
+4. In *steps seven through ten* we must create and import the business network cards for the Hyperledger Fabric administrator for Org1 and Org2, respectively.
 Once the business network cards are imported check them using the command `composer card list`.
 
-11. - 12. In steps eleven and twelve we must install/deploy the business network `bforos-bnav1` (defined in bna file, `bforos-bnav1@0.0.1.bna`)  onto the Hyperledger Fabric peer nodes for Org1 and Org2
+5. In *steps eleven and twelve* we must install/deploy the business network `bforos-bnav1` (defined in bna file, `bforos-bnav1@0.0.1.bna`)  onto the Hyperledger Fabric peer nodes for Org1 and Org2
 `````
 composer network install --card PeerAdmin@byfn-network-org1 --archiveFile bforos-bnav1@0.0.1.bna
 
@@ -67,13 +67,13 @@ composer network install --card PeerAdmin@byfn-network-org1 --archiveFile bforos
 composer network install --card PeerAdmin@byfn-network-org2 --archiveFile bforos-bnav1@0.0.1.bna
 
 `````
-13. Defining the endorsement policy for the business network. For the example the default endorsement policy is naive in the sense that only one organization has to endorse a transaction before it can be committed to the blockchain. This must be revised in the sequel. Create file in temporary folder.
+6. In *step thirteen* we define the endorsement policy for the business network. For the example the default endorsement policy is naive in the sense that only one organization has to endorse a transaction before it can be committed to the blockchain. This must be revised in the sequel. Create file in temporary folder.
 
-15. - 16. Retrieving business network administrator certificates for Org1 and Org2. The certficates will be placed into a directory called alice and bob in the current working directory. 
+7. In *steps fifteen and sixteen we retrieve business network administrator certificates for Org1 and Org2. The certficates will be placed into a directory called alice and bob in the current working directory. 
 
 At the end of the process we must have a temporary folder as the one we find in the repository as `example-temporary-folder`. Note that each file in this folder is only for ilustrative pourpose since the certificates and the other artifact will not be the same in a different setup. In addition in this temporary folder we have included a copy of the diretories alice and bob that are created in the current working directory, `first-network`.
 
-17. Starting the business network. Only Org1 needs to perform this operation. 
+8. In *step seventeen* we start the business network. Only Org1 needs to perform this operation. 
 
 `````
 composer network start -c PeerAdmin@byfn-network-org1 -n bforos-bnav1 -V 0.0.1 -o endorsementPolicyFile=/tmp/composer/endorsement-policy.json -A alice -C alice/admin-pub.pem -A bob -C bob/admin-pub.pem
@@ -81,7 +81,7 @@ composer network start -c PeerAdmin@byfn-network-org1 -n bforos-bnav1 -V 0.0.1 -
 `````
 Once this command completes, the business network will have been started. Both Alice and Bob will be able to access the business network, start to set up the business network, and onboard other participants from their respective organizations. However, both Alice and Bob must create new business network cards with the certificates that they created in the previous steps so that they can access the business network.
 
-18. Creating a business network card to access the business network as Org1
+9. In *step eighteen* we creata a business network card to access the business network as Org1
 
 Run the composer card create command to create a business network card that Alice, the business network administrator for Org1, can use to access the business network:
 
@@ -107,7 +107,7 @@ composer-rest-server -c alice@bforos-bnav1 -n "never" -p 3200
 `````
 The generated API is connected to the deployed blockchain and business network.
 
-19. Creating a business network card to access the business network as Org2
+10. In *step nineteen* we create a business network card to access the business network as Org2
 
 Run the composer card create command to create a business network card that Bob, the business network administrator for Org2, can use to access the business network:
 
@@ -133,7 +133,7 @@ composer-rest-server -c bob@bforos-bnav1 -n "never" -p 3200
 `````
 The generated API is connected to the deployed blockchain and business network.
 
-20. Use the rest server to test the business network, using the examples from the playground.
+11. Use the rest server to test the business network, using the test examples from the playground. The test examples generate two `participants:Researcher` and two `assets: ResearchOJ` (research objetcs). These will be created using each of the active API that have been deployed by each organization. This test ilustrates how both API's create participants, assets and transaccions among them.
 
 
 
