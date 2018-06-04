@@ -39,7 +39,7 @@ asset ResearchOJ identified by ROId {
   o Integer cost default=1
   //  o Boolean available default=True, availability for transaction
   --> Researcher owner optional
-  --> Researcher contributor optional
+  --> Researcher[] contributors optional
   }
 
 /*
@@ -52,7 +52,7 @@ asset Disco identified by DiscoId {
 participant Researcher identified by email {
   o String email
   o String firstName
-  o String lastNam
+  o String lastName
   o Integer wallet default=10
 }
 
@@ -85,6 +85,14 @@ transaction Enrich {
   --> ResearchOJ Ro
   --> Researcher contributor
   // Boolean check if it can be enriched
+}
+
+transaction ResearchOJHistory {
+  o String ROId
+}
+
+event ResearchOJHistoryResults {
+  o String[] results
 }
 
 /*

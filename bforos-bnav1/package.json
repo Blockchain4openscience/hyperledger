@@ -1,6 +1,6 @@
 {
-  "name": "bforos-bnav1",
-  "version": "0.0.1",
+  "name": "bforos",
+  "version": "0.0.6",
   "description": "blockchain4opensciencev1",
   "scripts": {
     "prepublish": "mkdirp ./dist && composer archive create --sourceType dir --sourceName . -a ./dist/bforos-bnav1.bna",

@@ -19,34 +19,26 @@
 *@param {org.bforos.Claim} claimData
 *@transaction
 */
-function claimRO(claimData){
+async function claimRO(claimData) {
     // define reward for claiming objetc
-    var points = claimData.Ro.reward;
+    const points = claimData.Ro.reward;
     // get wallet balance from claimant
-    var balance = claimData.claimer.wallet;
+    const balance = claimData.claimer.wallet;
     // new balance
-    claimData.claimer.wallet=balance+points;
+    claimData.claimer.wallet = balance + points;
     // assigned ownership of claimed objetc
-    claimData.Ro.owner=claimData.claimer;
+    claimData.Ro.owner = claimData.claimer;
     // 1. update asset registry
-    return getAssetRegistry('org.bforos.ResearchOJ')
-    .then(function (assetRegistry) {
-      return assetRegistry.update(claimData.Ro);
-    }).then(function(){
-    // 2. update participant registry
-    return getParticipantRegistry('org.bforos.Researcher')
-    })    
-    .then(function (participantRegistry) {
-      return participantRegistry.update(claimData.claimer);
-    })
-    .then(function () {
-        // Emit an event for the modified participant wallet.
-        var event = getFactory().newEvent('org.bforos', 'WalletEvent');
-        event.claimer = claimData.claimer;
-        event.oldbalance = balance;
-        event.newbalance = balance+points;
-        emit(event);
-    });
+    let assetRegistry = await getAssetRegistry('org.bforos.ResearchOJ');
+    await assetRegistry.update(claimData.Ro);
+    let participantRegistry = await getParticipantRegistry('org.bforos.Researcher');
+    await participantRegistry.update(claimData.claimer);
+    // Emit an event for the modified participant wallet.
+    let event = getFactory().newEvent('org.bforos', 'WalletEvent');
+    event.claimer = claimData.claimer;
+    event.oldbalance = balance;
+    event.newbalance = balance+points;
+    emit(event);
 }
 
 /**
@@ -55,29 +47,28 @@ function claimRO(claimData){
 *@param {org.bforos.Collect} collectData
 *@transaction
 */
-function collectRO(collectData){
+async function collectRO(collectData) {
     // define cost for collecting objetc
-    var points = collectData.Ro.cost;
+    const points = collectData.Ro.cost;
     // get wallet balance from collector
-    var balance = collectData.claimer.wallet;
-    if (balance-points<0){
+    const balance = collectData.claimer.wallet;
+
+    if (balance-points < 0) {
         throw new Error('Wallet amount insuficient for transaction');
     } else {
         // new balance
-        collectData.claimer.wallet=balance-points;
+        collectData.claimer.wallet = balance - points;
     }
-    return getParticipantRegistry('org.bforos.Researcher')
-    .then(function (participantRegistry) {
-        return participantRegistry.update(collectData.claimer);
-      })
-      .then(function () {
-          // Emit an event for the modified participant wallet.
-          var event = getFactory().newEvent('org.bforos', 'WalletEvent');
-          event.claimer = collectData.claimer;
-          event.oldbalance = balance;
-          event.newbalance = balance-points;
-          emit(event);
-      });
+
+    let participantRegistry = await getParticipantRegistry('org.bforos.Researcher');
+    await participantRegistry.update(collectData.claimer);
+
+    // Emit an event for the modified participant wallet.
+    const event = getFactory().newEvent('org.bforos', 'WalletEvent');
+    event.claimer = collectData.claimer;
+    event.oldbalance = balance;
+    event.newbalance = balance-points;
+    emit(event);
 }
 
 /**
@@ -86,33 +77,69 @@ function collectRO(collectData){
 *@param {org.bforos.Enrich} enrichData
 *@transaction
 */
-function enrichRO(enrichData){
+async function enrichRO(enrichData) {
     // define reward for enriching objetc
-    var points = enrichData.Ro.reward;
+    const points = enrichData.Ro.reward;
     // get wallet balance for contributor
-    var balance = enrichData.contributor.wallet;
+    const balance = enrichData.contributor.wallet;
     // new balance
-    enrichData.contributor.wallet=balance+points;
+    enrichData.contributor.wallet = balance + points;
     // assigned contributor of enriched objetc
-    enrichData.Ro.contributor=enrichData.contributor;
+    enrichData.Ro.contributor.push(enrichData.contributor);
     // 1. update asset registry
-    return getAssetRegistry('org.bforos.ResearchOJ')
-    .then(function (assetRegistry) {
-      return assetRegistry.update(enrichData.Ro);
-    }).then(function(){
+    let assetRegistry = await getAssetRegistry('org.bforos.ResearchOJ');
+    await assetRegistry.update(enrichData.Ro);    
     // 2. update participant registry
-    return getParticipantRegistry('org.bforos.Researcher')
-    })    
-    .then(function (participantRegistry) {
-      return participantRegistry.update(enrichData.contributor);
-    })
-    .then(function () {
-        // Emit an event for the modified participant wallet.
-        var event = getFactory().newEvent('org.bforos', 'WalletEvent');
-        event.claimer = enrichData.contributor;
-        event.oldbalance = balance;
-        event.newbalance = balance+points;
-        emit(event);
-    });
+    let participantRegistry =  await getParticipantRegistry('org.bforos.Researcher');
+    await participantRegistry.update(enrichData.contributor);
+
+    // Emit an event for the modified participant wallet.
+    const event = getFactory().newEvent('org.bforos', 'WalletEvent');
+    event.claimer = enrichData.contributor;
+    event.oldbalance = balance;
+    event.newbalance = balance+points;
+    emit(event);
 }
 
+/**
+* Enrich a Research object after it is created
+* Recieve a reward on succesefully Enriched Ro's
+*@param {org.bforos.ResearchOJHistory} transaction
+*@transaction
+*/
+async function getResearchOJHistory(transaction){
+    const ROId = transaction.ROId
+    const nativeSupport = transaction.nativeSupport;
+
+    const assetRegistry = await getAssetRegistry('org.bforos.ResearchOJ');
+
+    const nativeKey = getNativeAPI().createCompositeKey('Asset:org.bforos.ResearchOJ', [ROId]);
+    const iterator = await getNativeAPI().getHistoryForKey(nativeKey);
+    let results = [];
+    let res = { done: false };
+    while (!res.done) {
+        res = await iterator.next();
+
+        if (res && res.value && res.value.value) {
+            const value = res.value.value.toString('utf8');
+            const record = {
+                tx_id: res.value.tx_id,
+                value: value,
+                timestamp: res.value.timestamp
+            };          
+            results.push(JSON.stringify(record));
+        }
+        if (res && res.done) {
+            try {
+                iterator.close();
+            } catch (err) {
+            }
+        }
+    }
+
+    const event = getFactory().newEvent('org.bforos', 'ResearchOJHistoryResults');
+    event.results = results;
+    emit(event);
+
+    // return results;
+}
