@@ -20,7 +20,8 @@ namespace org.bforos
 
 asset ResearchOJ identified by ROId {
   o String ROId
-  o TypeRO typero default="journalArticle"
+  o String typero 
+  o String title
   o String description
   o String[] urls
   o String[] Publishers optional
@@ -70,20 +71,3 @@ event ResearchOJHistoryResults {
   o String[] results
 }
 
-enum TypeRO {
-  // type of research objects FaBiO Classes, need to include all
-  o abstracts
-  o algorithm
-  o book
-  o clinicalGuideline
-  o computerProgram
-  o dataset
-  o experimentalProtocol
-  o journalArticle
-  o patent
-  o presentation
-  o repository
-  o thesis
-  o webPage
-  o workingPaper
-}
