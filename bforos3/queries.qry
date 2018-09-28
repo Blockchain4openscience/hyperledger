@@ -1,0 +1,34 @@
+query selectHistorianRecordsByTrxId {
+  description: "Select historian records by transaction id"
+  statement:
+    SELECT org.hyperledger.composer.system.HistorianRecord
+    WHERE (transactionId == _$transactionId)
+}
+
+query selectResearchObjectsByClaimerId {
+  description: "Select research objects by contributor id"
+  statement:
+  	SELECT org.bforos.ResearchOJ
+  	WHERE (contributors CONTAINS _$researcherId)
+}
+
+query selectDiscosByCollectorId {
+  description: "Select discos by collector id"
+  statement:
+  	SELECT org.bforos.Disco 
+  	WHERE (collectors CONTAINS _$researcherId)
+}
+
+query selectDiscosByOwnerId {
+  description: "Select discos by collector id"
+  statement:
+  	SELECT org.bforos.Disco 
+  	WHERE (owner == _$researcherId)
+}
+
+query selectResearchObjByCollectorId {
+  description: "Select research object by collector id"
+  statement:
+  	SELECT org.bforos.ResearchOJ 
+  	WHERE (collectors CONTAINS _$researcherId)
+}

@@ -1,0 +1,38 @@
+/**
+ * Access control rules for tutorial-network
+ */
+rule Default {
+    description: "Allow all participants access to all resources"
+    participant: "ANY"
+    operation: ALL
+    resource: "org.bforos.*"
+    action: ALLOW
+}
+
+rule SystemACL {
+  description:  "System ACL to permit all access"
+  participant: "ANY"
+  operation: ALL
+  resource: "org.hyperledger.composer.system.**"
+  action: ALLOW
+}
+
+rule CreateResearchObjectOnlyWithTx{
+    description: "Allow all create Research Objects"
+    participant: "ANY"
+    operation: CREATE
+    resource: "org.bforos.ResearchOJ"
+    transaction: "org.bforos.CreateResearchOJ"
+    action: ALLOW
+}
+
+rule CreateDiscoOnlyWithTx{
+    description: "Allow all create Disco"
+    participant: "ANY"
+    operation: CREATE
+    resource: "org.bforos.Disco"
+    transaction: "org.bforos.CreateDisco"
+    action: ALLOW
+}
+
+
