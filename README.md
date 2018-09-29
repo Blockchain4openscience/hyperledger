@@ -14,163 +14,407 @@ The business network is designed to capture the interactions between researchers
 We will be posting updates on different versions of the business network `bforos` that can be used both in the [Composer Playground](https://composer-playground.mybluemix.net/) or can be deployed locally in Fabric. The individual files that make up the business network archive are in the directory `bforos` of the repository.
 
 -----
-In order to use any version of the business network in the [Composer Playground](https://composer-playground.mybluemix.net/) you can download the `.bna` file, for example `bforos@0.0.6.bna` then connect to the playground,
-1. Select the option to deploy a new business network.
-2. In secttion 2. Model Network Starter Template select the option to Drop here   to upload or browse. This will allow you can upload any `.bna` file. 
-3. Once the `.bna` file is uploaded you must deploy the business network. As soon at the business network is up and running you can follow the instructions to test or make modifications.
-
------
-In order to deploy into a local Fabric enviormennt please clone the repository and follow the instructions
+In order to deploy into a local Fabric environment please clone the repository and follow the instructions
 
 `````
 git clone https://github.com/Blockchain4openscience/hyperledger
 `````
-We follow the hyperledger-composer tutorial on [Deploying to a multi-organization Hyperledger Fabric](https://hyperledger.github.io/composer/latest/tutorials/deploy-to-fabric-multi-org).
+We follow the hyperledger-composer tutorial on [Developer tutorial for creating a Hyperledger Composer solution](https://hyperledger.github.io/composer/latest/tutorials/developer-tutorial).
 
 Make sure that you start a fresh Hyperledger Fabric network, that is you must teardown any previous Hyperledger Fabric constainer and delete any old business network card that may exist form previous Fabric enviorments.
 
+## Installing the development environment
+
+Follow the installation steps on [Installing the development environment](https://hyperledger.github.io/composer/latest/installing/development-tools)
+
+In this tutorial, you must be create a __PeerAdmin__ Card. To see the card name:
+
+```
+composer card list
+```
+
 ## Fabric Network Design
 
-The current Hyperledger Fabric Network that will serve as a skeleton design to test out the deployment of further changes to the business network will contain two organizations `Org1` and `Org2` each with two peer nodes a certification authority and a single orderer node for the network. These components will be running insde Docker containers. This sample network is known as the `first-network` from the fabric-samples from the repository mentioned in the following tutorial.
+This step
 
-Once the repository has been cloned then we can generate Fabric network/ security artifacts according to design of the network and following the steps mentioned in the hyperledger-composer tutorial: [Deploying a Hyperledger Composer blockchain business network to Hyperledger Fabric (multiple organizations)](https://hyperledger.github.io/composer/latest/tutorials/deploy-to-fabric-multi-org)
+The hyperledger repository contains the bussines network definition (bforos3 is the last version) and a bussiness network archive called __bforos@0.0.1.bna__ generated from this definition . If you wish, you can generate a business network archive with:
 
-The tutorial is made up of prerequisites and *19 steps* that generates the network, the artifacts, cards and the element required for each organization. The steps also include the deployment of the business network to the nodes of the organization. We will make reference to the steps in the tutorial by mentioning them in *italic*. 
+```
+composer archive create -t dir -n .
+```
 
-We modify some of these steps in order to install/deploy the business network `bforos`,
+After creating the .bna file, the business network can be deployed to the instance of Hyperledger Fabric. For this step you must have the name of the __PeerAdmin__ card created in previous steps. 
 
-1. In *step one* the following commands,
-`````
-./byfn.sh -m generate
+Deploying a business network to the Hyperledger Fabric requires the Hyperledger Composer business network to be installed on the peer, then the business network can be started, and a new participant, identity, and associated card must be created to be the network administrator. Finally, the network administrator business network card must be imported for use, and the network can then be pinged to check it is responding.
 
-./byfn.sh -m up -s couchdb -a
-`````
-generate Fabric network (given the design mentioned above) and security artifacts (certificates for all the network components and private keys). For convenience these artifacts will be kept togheter in a temporary file under `/tmp/composer/`.
+1. To install the business network:
 
-2. In *steps two through four*, we must manually create a connection profile that includes the Certificate Authority (CA) certificates for all of the network components in order to connect to those network components (note that every time that we bootstrap the network these certificates will change an hence we must update the connection profile). These certificates are found in the `orderers` and `peers` folders under the following folders `/tls/ca.crt`. Navigate to the tmp `cd /tmp/composer` file where each certificate is located and use the following command to get the certificate from the .pem file so that it can be embedded into the above connection profile.
-`````
-awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' ca.crt > ca-ord.txt
-`````
-Follow the instructions to complete the connection profile.
-This connection profile now describes the fabric network setup, all the peers, orderers and certificate authorities that are part of the network, it defines all the organizations that are participating in the network and also defines the channel's on this network. Hyperledger Composer can only interact with a single channel so only one channel should be defined. We must specify the connection profile for each or the organizations, `byfn-network-org1.json` and `byfn-network-org2.json`.
+```
+composer network install --card PeerAdmin@hlfv1 --archiveFile bforos@0.0.1.bna
+```
 
-3. In *steps five and six* we must locate the the certificate and private key for the Hyperledger Fabric administrator for Org1 and Org2 in order to copy this artifacts to the temporary folder. Note that the certificates must copied be all on the same line (this is very important).
+If __PeerAdmin__ card name is different to PeerAdmin@hlfv1 replace this value
 
-## Installing Business Network onto Fabric running network 
+2. To start the business network:
 
-4. In *steps seven through ten* we must create and import the business network cards for the Hyperledger Fabric administrator for Org1 and Org2, respectively. Copy the cards that are stored in the `/tmp/composer/` onto the the folder for `first-network` before importing them. Once the business network cards are imported check them using the command `composer card list`.
-First create both administrative cards
-`````
-composer card create -p byfn-network-org1.json -u PeerAdmin -c Admin@org1.example.com-cert.pem -k *_sk -r PeerAdmin -r ChannelAdmin -f PeerAdmin@byfn-network-org1.card
-`````
-`````
-composer card create -p byfn-network-org2.json -u PeerAdmin -c Admin@org2.example.com-cert.pem -k *_sk -r PeerAdmin -r ChannelAdmin -f PeerAdmin@byfn-network-org2.card
-`````
-Import the administrative cards
-`````
-composer card import -f PeerAdmin@byfn-network-org1.card --card PeerAdmin@byfn-network-org1
-`````
-`````
-composer card import -f PeerAdmin@byfn-network-org2.card --card PeerAdmin@byfn-network-org2
-`````
-5. In *steps eleven and twelve* we must install/deploy the business network `bforos` (defined in bna file, `bforos@0.0.6.bna`)  onto the Hyperledger Fabric peer nodes for Org1 and Org2
-`````
-composer network install --card PeerAdmin@byfn-network-org1 --archiveFile bforos@0.0.6.bna
+```
+composer network start --networkName bforos --networkVersion 0.0.1 --networkAdmin admin --networkAdminEnrollSecret adminpw --card PeerAdmin@hlfv1 
+```
 
-`````
-`````
-composer network install --card PeerAdmin@byfn-network-org2 --archiveFile bforos@0.0.6.bna
+This command generate a file for the admin network card __admin@bforos.card__ 
 
-`````
-6. In *step thirteen* we define the endorsement policy for the business network. For the example the default endorsement policy is naive in the sense that only one organization has to endorse a transaction before it can be committed to the blockchain. This must be revised in the sequel. Create file in temporary folder.
+1. To import the network administrator identity as a usable business network card:
 
-7. In *steps fifteen and sixteen we retrieve business network administrator certificates for Org1 and Org2. The certficates will be placed into a directory called alice and bob in the current working directory. 
-`````
-composer identity request -c PeerAdmin@byfn-network-org1 -u admin -s adminpw -d alice
-`````
-`````
-composer identity request -c PeerAdmin@byfn-network-org2 -u admin -s adminpw -d bob
-`````
-At the end of the process we must have a temporary folder as the one we find in the repository as `example-temporary-folder`. Note that each file in this folder is only for ilustrative pourpose since the certificates and the other artifact will not be the same in a different setup. In addition in this temporary folder we have included a copy of the diretories alice and bob that are created in the current working directory, `first-network`.
+```
+composer card import --file admin@bforos.card
+```
 
-8. In *step seventeen* we start the business network. Only Org1 needs to perform this operation. 
+4. To check that the business network has been deployed successfully, run the following command to ping the network:
 
-`````
-composer network start -c PeerAdmin@byfn-network-org1 -n bforos -V 0.0.6 -o endorsementPolicyFile=/tmp/composer/endorsement-policy.json -A alice -C alice/admin-pub.pem -A bob -C bob/admin-pub.pem
+```
+composer network ping --card admin@bforos
+```
 
-`````
-Once this command completes, the business network will have been started. Both Alice and Bob will be able to access the business network, start to set up the business network, and onboard other participants from their respective organizations. However, both Alice and Bob must create new business network cards with the certificates that they created in the previous steps so that they can access the business network.
+## Generating a REST server
 
-9. In *step eighteen* we creata a business network card to access the business network as Org1
+Hyperledger Composer can generate a bespoke REST API based on a business network. For developing a web application, the REST API provides a useful layer of language-neutral abstraction.
 
-Run the composer card create command to create a business network card that Alice, the business network administrator for Org1, can use to access the business network:
+1. To create the REST API, navigate to the bforos directory and run the following command:
 
-`````
-composer card create -p /tmp/composer/org1/byfn-network-org1.json -u alice -n bforos -c alice/admin-pub.pem -k alice/admin-priv.pem
+```
+composer-rest-server
+```
 
-`````
-Run the composer card import command to import the business network card that you just created:
+2. Enter admin@bforos as the card name.
+3. Select __never use namespaces__ when asked whether to use namespaces in the generated API.
+4. Select __No__ when asked whether to secure the generated API.
+5. Select __Yes__ when asked whether to enable event publication.
+6. Select __No__ when asked whether to enable TLS security.
 
-`````
-composer card import -f alice@bforos.card
-`````
-Run the composer network ping command to test the connection to the blockchain business network:
-
-`````
-composer network ping -c alice@bforos
-`````
-## Running the composer-rest-server
-
-Generating a REST server requires running the following command
-`````
-composer-rest-server -c alice@bforos -n "never" -p 3200 
-`````
 The generated API is connected to the deployed blockchain and business network.
 
-10. In *step nineteen* we create a business network card to access the business network as Org2
+## Composer Rest Server
 
-Run the composer card create command to create a business network card that Bob, the business network administrator for Org2, can use to access the business network:
+Launch your browser and go to the URL given [http://localhost:3000/explorer](http://localhost:3000/explorer) for interacting with it. Rest server generates an endpoint for each participant, asset and transaction of the business network definition. Go to the [business model](https://github.com/Blockchain4openscience/hyperledger/tree/master/bforos2) to review all operations in the rest server. yo can use a api environment tool (e.g. [Postman](https://www.getpostman.com/)) to send Http Request to Hypeledger. 
 
-`````
-composer card create -p /tmp/composer/org2/byfn-network-org2.json -u bob -n bforos -c bob/admin-pub.pem -k bob/admin-priv.pem
+Additionally you can run hyperledger playground to see easily the changes in the components of the business model. 
 
-`````
-Run the composer card import command to import the business network card that you just created:
+```
+composer-playground
+```
 
-`````
-composer card import -f bob@bforos.card
-`````
-Run the composer network ping command to test the connection to the blockchain business network:
+If you don't have hyperledger playground, follow the installation steps on [Installing the development environment](https://hyperledger.github.io/composer/latest/installing/development-tools):
 
-`````
-composer network ping -c bob@bforos
-`````
-## Running the composer-rest-server
+### Create Participant
 
-Generating a REST server requires running the following command
-`````
-composer-rest-server -c bob@bforos -n "never" -p 3100 
-`````
-The generated API is connected to the deployed blockchain and business network.
+```
+http://localhost:3000/api/Researcher
+```
 
-11. Use the rest server to test the business network, using the test examples from the playground. The test examples generate two `participants:Researcher` and two `assets: ResearchOJ` (research objetcs). These will be created using each of the active API that have been deployed by each organization. This test ilustrates how both API's create participants, assets and transaccions among them.
-
-## Stopping Hyperledger Fabric and deleting network cards
-
-12. To stop the runtime and delete containers, run the following command
-`````
-./byfn.sh -m down
-`````
-13. Delete any 'old' business network cards that may exist in your wallet from previous Fabric environments. 
-`````
-composer card delete -c Card Name
-`````
-14. Delete your file system card store in your HOME directory as follows:
-`````
-rm -fr $HOME/.composer
-`````
+Create two `Researcher` participant:
 
 
+```
+POST http://localhost:3000/api/Reseacher -d
+{
+  "$class": "org.bforos.Researcher",
+  "researcherId": "1",
+  "email": "juan.uno@bforos.org",
+  "firstName": "juan",
+  "lastName": "uno"
+}
+```
+
+__Response__
+
+```json
+{
+  "$class": "org.bforos.Researcher",
+  "researcherId": "1",
+  "email": "juan.uno@bforos.org",
+  "firstName": "juan",
+  "lastNam": "uno",
+  "wallet": 10
+}
+```
+
+```
+POST http://localhost:3000/api/Reseacher -d
+{
+  "$class": "org.bforos.Researcher",
+  "researcherId": "2",
+  "email": "juan.dos@bforos.org",
+  "firstName": "juan",
+  "lastNam": "dos"
+}
+```
+
+__Response__
+
+
+```json
+{
+  "$class": "org.bforos.Researcher",
+  "researcherId": "2",
+  "email": "juan.dos@bforos.org",
+  "firstName": "juan",
+  "lastNam": "dos",
+  "wallet": 10
+}
+```
+
+### Create Researcher Object
+
+```
+http://localhost:3000/api/ResearchOJ
+```
+
+1. The research objects can be created directly. With this method you can create a research object without contributors: 
+
+
+```
+POST http://localhost:3000/api/ReseachOJ -d {
+{
+  "$class": "org.bforos.ResearchOJ",
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro"
+}
+```
+
+__Response__
+
+```json
+{
+  "$class": "org.bforos.ResearchOJ",
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro",
+  "reward": 1,
+  "cost": 1,
+  "countAccess": "0",
+  "collectors": [
+    {}
+  ],
+  "contributors": [
+    {}
+  ]
+}
+```
+
+2. The research objects can be created by the smart contract `CreateResearchOJ`. The reward and cost is defined in the transaction
+
+```
+POST http://localhost:3000/api/CreateResearchOJ -d {
+{
+  "$class": "org.bforos.CreateResearchOJ",
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro",
+  "creator": "resource:org.bforos.Researcher#1"
+}
+```
+Unlike the first method, this method generate a wallet event for `juan.uno@bforos.org` that create the researcher object an assigns as contributor
+
+__Transaction Response__
+
+
+```json
+{
+  "$class": "org.bforos.CreateResearchOJ", 
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro",
+  "creator": "resource:org.bforos.Researcher#1",
+  "transactionId": "ce75b0e7-554b-4fff-a890-dee65067338c",
+  "timestamp": "2018-09-29T16:35:57.702Z"
+}
+```
+
+__Wallet Event__
+
+See in hyperledger playground (all transaction)
+
+```json
+{
+ "$class": "org.bforos.WalletEvent",
+ "claimer": "resource:org.bforos.Researcher#1",
+ "oldbalance": 10,
+ "newbalance": 11,
+ "eventId": "ce75b0e7-554b-4fff-a890-dee6343067338c#0",
+ "timestamp": "2018-02-28T15:03:44.534Z"
+}
+```
+
+__Research Object Modified__
+
+See in hyperledger playground (ResearcherOJ)
+
+```json
+{
+  "$class": "org.bforos.ResearchOJ",
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro",
+  "reward": 1,
+  "cost": 1,
+  "countAccess": "0",
+  "collectors": [
+    {}
+  ],
+  "contributors": [
+    "resource:org.bforos.Researcher#1"
+  ]
+}
+```
+
+### Claim Research Object
+
+```
+POST http://localhost:3000/api/ClaimRO
+```
+
+A `Researcher` participant claim a `ResearchOJ`. This generates a wallet event for research object claimer:
+
+
+```
+POST http://localhost:3000/api/ClaimRO -d
+{
+  "$class": "org.bforos.ClaimRO",
+  "researchObjId": "resource:org.bforos.ResearchOJ#RO01",
+  "claimer": "resource:org.bforos.Researcher#2"
+}
+```
+
+__Transaction Response__
+
+
+```json
+{
+  "$class": "org.bforos.ClaimRO", 
+  "ResearcherObjId": "resource:org.bforos.ResearchOJ#RO01",
+  "claimer": "resource:org.bforos.Researcher#1",
+  "transactionId": "ce75b0e7-554b-4fff-a890-dee65456338c",
+  "timestamp": "2018-09-29T15:03:57.702Z"
+}
+```
+
+__Wallet Event__
+
+See in hyperledger playground (all transaction)
+
+```json
+{
+ "$class": "org.bforos.WalletEvent",
+ "claimer": "resource:org.bforos.Researcher#2",
+ "oldbalance": 10,
+ "newbalance": 11,
+ "eventId": "ce75b0e7-554b-4fff-a890-dee65456338c#0",
+ "timestamp": "2018-02-28T15:03:44.534Z"
+}
+```
+
+__Research Object Modified__
+
+See in hyperledger playground (ResearcherOJ)
+
+```json
+{
+  "$class": "org.bforos.ResearchOJ",
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro",
+  "reward": 1,
+  "cost": 1,
+  "countAccess": "0",
+  "collectors": [
+    {}
+  ],
+  "contributors": [
+	"resource:org.bforos.Researcher#1",
+	"resource:org.bforos.Researcher#2"
+  ]
+}
+```
+
+### CountRO
+
+```
+POST http://localhost:3000/api/CountRO
+```
+
+Count access to `ResearchOJ`. This generates a wallet event for each contributor of research object:
+
+```
+POST http://localhost:3000/api/CountRO -d
+{
+  "$class": "org.bforos.CountRO",
+  "Ro": "resource:org.bforos.ResearchOJ#RO01",
+  "description": "description information optional"
+}
+``` 
+
+__Transaction Response__
+
+
+```json
+{
+  "$class": "org.bforos.CountRO", 
+  "ResearcherObjId": "resource:org.bforos.ResearchOJ#RO01",
+  "claimer": "resource:org.bforos.Researcher#1",
+  "transactionId": "ce75b0e7-554b-4fff-a890-dee65456338c",
+  "timestamp": "2018-09-29T15:03:57.702Z"
+}
+```
+
+__Wallet Event__
+
+See in hyperledger playground (all transaction)
+
+```json
+{
+ "$class": "org.bforos.WalletEvent",
+ "claimer": "resource:org.bforos.Researcher#juan.uno@bforos.org",
+ "oldbalance": 11,
+ "newbalance": 12,
+ "eventId": "ce75b0e7-554b-4fff-a890-deefdfdg067338c#0",
+ "timestamp": "2018-02-28T16:13:44.534Z"
+}
+```
+
+```json
+{
+ "$class": "org.bforos.WalletEvent",
+ "claimer": "resource:org.bforos.Researcher#juan.dos@bforos.org",
+ "oldbalance": 11,
+ "newbalance": 12,
+ "eventId": "ce75b0e7-554b-4fff-a890-dee6506fdss#0",
+ "timestamp": "2018-02-28T16:23:44.534Z"
+}
+```
+
+__Research Object Modified__
+
+See in hyperledger playground (ResearcherOJ)
+
+```json
+{
+  "$class": "org.bforos.ResearchOJ",
+  "ResearcherObjId": "RO01",
+  "typero": "DOCUMENT",
+  "uri": "www.juanuno.com/ro",
+  "reward": 1,
+  "cost": 1,
+  "countAccess": "1",
+  "collectors": [
+    {}
+  ],
+  "contributors": [
+	"resource:org.bforos.Researcher#1",
+	"resource:org.bforos.Researcher#2"
+  ]
+}
+```
 
 
 
@@ -179,4 +423,4 @@ rm -fr $HOME/.composer
 
 
 
- 
+
