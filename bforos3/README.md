@@ -48,7 +48,7 @@ Create two `Researcher` participant:
   "researcherId": "1",
   "email": "juan.uno@bforos.org",
   "firstName": "juan",
-  "lastNam": "uno",
+  "lastName": "uno",
   "wallet": 10
 }
 ```
@@ -59,7 +59,7 @@ Create two `Researcher` participant:
   "researcherId": "2",
   "email": "juan.dos@bforos.org",
   "firstName": "juan",
-  "lastNam": "dos",
+  "lastName": "dos",
   "wallet": 10
 }
 ```
@@ -70,7 +70,7 @@ Create two `Researcher` participant:
   "researcherId": "3",
   "email": "juan.tres@bforos.org",
   "firstName": "juan",
-  "lastNam": "tres",
+  "lastName": "tres",
   "wallet": 10
 }
 ```
@@ -82,21 +82,23 @@ Create two `ResearchOJ` asset.
 ```json
 {
   "$class": "org.bforos.ResearchOJ",
-  "ResearcherObjId": "RO01",
-  "typero": "document",
+  "researchObjId": "RO01",
+  "typeRO": "DOCUMENT",
   "uri": "www.juanuno.com/ro",
   "reward": 5,
-  "cost": 1
-}
-```
+  "cost": 1,
+  "countAccess": 0,
+  "collectors": [],
+  "contributors": []
+}```
 
 2. The research objects can be created by the smart contract `CreateResearchOJ`. 
 
 ```json
 {
-  "$class": "org.bforos.ResearchOJ", 
-  "ResearcherObjId": "RO01",
-  "typero": "document",
+  "$class": "org.bforos.CreateResearchOJ",
+  "researchObjId": "RO02",
+  "typeRO": "DOCUMENT",
   "uri": "www.juanuno.com/ro",
   "creator": "resource:org.bforos.Researcher#1"
 }
@@ -107,11 +109,12 @@ Unlike the first method, this method generate a wallet event for `juan.uno@bforo
 ```json
 {
  "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.uno@bforos.org",
- "oldbalance": 10,
- "newbalance": 15,
- "eventId": "ce75b0e7-554b-4fff-a890-dee65067338c#0",
- "timestamp": "2018-02-28T14:13:44.534Z"
+ "claimer": "resource:org.bforos.Researcher#1",
+ "operation": "CREATE",
+ "oldBalance": 10,
+ "newBalance": 11,
+ "eventId": "982ec621-f877-4497-8051-48ee76502bab#0",
+ "timestamp": "2018-10-10T22:41:04.329Z"
 }
 ```
 
@@ -120,7 +123,7 @@ Submit a `ClaimRO` transaction:
 ```json
 {
   "$class": "org.bforos.ClaimRO",
-  "researchObjId": "resource:org.bforos.ResearchOJ#RO01",
+  "researchObj": "resource:org.bforos.ResearchOJ#RO01",
   "claimer": "resource:org.bforos.Researcher#2"
 }
 ```
@@ -130,11 +133,12 @@ This transaction has registered the research objet `ROId:RO01` to `juan.dos@bfor
 ```json
 {
  "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.dos@bforos.org",
- "oldbalance": 10,
- "newbalance": 15,
- "eventId": "ce75b0e7-554b-4fff-a890-dee65067338c#0",
- "timestamp": "2018-02-28T14:53:44.534Z"
+ "claimer": "resource:org.bforos.Researcher#2",
+ "operation": "CLAIM",
+ "oldBalance": 10,
+ "newBalance": 15,
+ "eventId": "3b7978ed-f13f-4559-a64c-2db25cdc32af#0",
+ "timestamp": "2018-10-10T22:44:20.290Z"
 }
 ```
 
@@ -143,43 +147,33 @@ Submit a `CollectRO` transaction:
 ```json
 {
   "$class": "org.bforos.CollectRO",
-  "Ro": "resource:org.bforos.ResearchOJ#RO01",
-  "claimer": "resource:org.bforos.Researcher#3"
+  "researchObj": "resource:org.bforos.ResearchOJ#RO01",
+  "collector": "resource:org.bforos.Researcher#3"
 }
 ```
 
-This transaction allows the research object `ROId:RO01` to be used by `juan.tres@bforos.org` and records this in the registry as collector. Additionally the collection of the object has a cost of 1 point for `juan.tres@bforos.org`. This cost will be reflected in the new state of his wallet; the change in the state of the wallet is recorded as an event using WalletEvent, that we used before. Additionally it rewards 5 points to `juan.uno@bforos.org` and `juan.dos@bforos.org` because they are contributors of the research object. This reward will be reflected in the new state of his wallet; the change in the state of the wallet is recorded as an event.
+This transaction allows the research object `ROId:RO01` to be used by `juan.tres@bforos.org` and records this in the registry as collector. Additionally the collection of the object has a cost of 1 point for `juan.tres@bforos.org`. This cost will be reflected in the new state of his wallet; the change in the state of the wallet is recorded as an event using WalletEvent, that we used before. Additionally it rewards 5 points to `juan.dos@bforos.org` because he is a contributors of the research object. This reward will be reflected in the new state of his wallet; the change in the state of the wallet is recorded as an event.
 
 ```json
 {
  "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.tres@bforos.org",
- "oldbalance": 10,
- "newbalance": 9,
- "eventId": "ce75b0e7-554b-4fff-a890-dee6343067338c#0",
- "timestamp": "2018-02-28T15:03:44.534Z"
-}
-```
+ "claimer": "resource:org.bforos.Researcher#3",
+ "operation": "COLLECT",
+ "oldBalance": 10,
+ "newBalance": 9,
+ "eventId": "46758e6b-51c0-42d2-945c-3d6bc5cab01d#1",
+ "timestamp": "2018-10-10T22:46:40.991Z"
+}```
 
 ```json
 {
  "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.uno@bforos.org",
- "oldbalance": 15,
- "newbalance": 20,
- "eventId": "ce75b0e7-554b-4fff-a890-dee65er3r7338c#0",
- "timestamp": "2018-02-28T15:33:44.534Z"
-}
-```
-
-```json
-{
- "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.dos@bforos.org",
- "oldbalance": 15,
- "newbalance": 20,
- "eventId": "ce75b0e7-554b-4fff-a890-dee650sdfsd38c#0",
- "timestamp": "2018-02-28T15:43:44.534Z"
+ "claimer": "resource:org.bforos.Researcher#2",
+ "operation": "COLLECT",
+ "oldBalance": 15,
+ "newBalance": 20,
+ "eventId": "46758e6b-51c0-42d2-945c-3d6bc5cab01d#0",
+ "timestamp": "2018-10-10T22:46:40.991Z"
 }
 ```
 
@@ -187,34 +181,37 @@ Submit a `CountRO` transaction
 
 ```json
 {
-  "$class": "org.bforos.CountRO",
-  "Ro": "resource:org.bforos.ResearchOJ#RO01",
-  "description": "description information"
+ "$class": "org.bforos.CountRO",
+ "researchObj": "resource:org.bforos.ResearchOJ#RO01",
+ "description": "description information"
 }
-
 ``` 
 
-This transaction allows increment a counter access field in the research object `ROId:RO01`. Additionally it rewards 5 points to `juan.uno@bforos.org` and `juan.dos@bforos.org` because they are contributors of the research object. This reward will be reflected in the new state of his wallet; the change in the state of the wallet is recorded as an event.
+This transaction allows increment a counter access field in the research object `ROId:RO01`. Additionally it rewards 5 points to `juan.dos@bforos.org` because he is a contributor of the research object. This reward will be reflected in the new state of his wallet; the change in the state of the wallet is recorded as an event.
 
 
 ```json
 {
- "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.uno@bforos.org",
- "oldbalance": 20,
- "newbalance": 25,
- "eventId": "ce75b0e7-554b-4fff-a890-deefdfdg067338c#0",
- "timestamp": "2018-02-28T16:13:44.534Z"
+ "$class": "org.bforos.CountEvent",
+ "researchObj": "resource:org.bforos.ResearchOJ#RO01",
+ "description": "description information",
+ "oldCountAccess": 0,
+ "newCountAccess": 1,
+ "eventId": "34fa9218-0b89-4e4f-8ac0-891d54285a08#1",
+ "timestamp": "2018-10-10T22:51:02.165Z"
 }
 ```
 
 ```json
 {
  "$class": "org.bforos.WalletEvent",
- "claimer": "resource:org.bforos.Researcher#juan.dos@bforos.org",
- "oldbalance": 20,
- "newbalance": 25,
- "eventId": "ce75b0e7-554b-4fff-a890-dee6506fdss#0",
- "timestamp": "2018-02-28T16:23:44.534Z"
+ "claimer": "resource:org.bforos.Researcher#2",
+ "operation": "ACCESS",
+ "oldBalance": 20,
+ "newBalance": 25,
+ "eventId": "34fa9218-0b89-4e4f-8ac0-891d54285a08#0",
+ "timestamp": "2018-10-10T22:51:02.165Z"
 }
 ```
+
+Need to correct business logit to create and collect `Disco` assets

@@ -63,7 +63,7 @@ async function createResearchOJ(createROData) {
 * @param {org.bforos.CreateDisco} createData
 * @transaction
 */
-async function createDisco(createDiscoData) {
+async function createDisco(collectDiscoData) {
     // check if researcher have al research objects
     const researchObjs = collectDiscoData.disco.researchObjs;
     let points = 0;
