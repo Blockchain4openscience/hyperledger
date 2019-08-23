@@ -85,6 +85,10 @@ Hyperledger Composer can generate a bespoke REST API based on a business network
 composer-rest-server
 ```
 
+```
+composer-rest-server -c admin@bforos -n never -w true
+```
+
 2. Enter admin@bforos as the card name.
 3. Select __never use namespaces__ when asked whether to use namespaces in the generated API.
 4. Select __No__ when asked whether to secure the generated API.
@@ -145,7 +149,7 @@ POST http://localhost:3000/api/Reseacher -d
   "researcherId": "2",
   "email": "juan.dos@bforos.org",
   "firstName": "juan",
-  "lastNam": "dos"
+  "lastName": "dos"
 }
 ```
 
@@ -208,8 +212,8 @@ __Response__
 POST http://localhost:3000/api/CreateResearchOJ -d {
 {
   "$class": "org.bforos.CreateResearchOJ",
-  "ResearcherObjId": "RO01",
-  "typero": "DOCUMENT",
+  "researchObjId": "RO01",
+  "typeRO": "DOCUMENT",
   "uri": "www.juanuno.com/ro",
   "creator": "resource:org.bforos.Researcher#1"
 }
@@ -415,7 +419,20 @@ See in hyperledger playground (ResearcherOJ)
   ]
 }
 ```
-
+```
+{
+  "$class": "org.bforos.ResearchOJ",
+  "researchObjId": "RO03",
+  "typeRO": "OTHER",
+  "uri": "",
+  "reward": 1,
+  "cost": 1,
+  "countAccess": 0,
+  "cauthors": [1,2],
+  "collectors": [],
+  "contributors": ["resource:org.bforos.Researcher#1","resource:org.bforos.Researcher#2"]
+}
+```
 
 
 

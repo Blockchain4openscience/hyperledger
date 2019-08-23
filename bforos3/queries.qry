@@ -9,7 +9,7 @@ query selectResearchObjectsByClaimerId {
   description: "Select research objects by contributor id"
   statement:
   	SELECT org.bforos.ResearchOJ
-  	WHERE (contributors CONTAINS _$researcherId)
+  	WHERE (cauthors CONTAINS _$researcherId)
 }
 
 query selectDiscosByCollectorId {

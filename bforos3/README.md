@@ -214,4 +214,15 @@ This transaction allows increment a counter access field in the research object 
 }
 ```
 
-Need to correct business logit to create and collect `Disco` assets
+In order to create a `Disco` asset we need to select the research objects that will be contained into
+this new aggregator asset, for example create a disco from `RO01` and `RO02` that have been previously creatred
+
+```json
+{
+  "$class": "org.bforos.CreateDisco",
+  "discoId": "DC01",
+  "title": "disco for RO01 and RO02",
+  "researchObjs": ["resource:org.bforos.ResearchOJ#RO01","resource:org.bforos.ResearchOJ#RO02"],
+  "creator": "resource:org.bforos.Researcher#1"
+}
+```

@@ -60,54 +60,37 @@ async function createResearchOJ(createROData) {
 * Create a disco after it is created
 * Reciebe a reward on succesefully create disco
 * @fires org.bforos.walletEvent
-* @param {org.bforos.CreateDisco} createData
+* @param {org.bforos.CreateDisco} createDiscoData
 * @transaction
 */
-async function createDisco(collectDiscoData) {
-    // check if researcher have al research objects
-    const researchObjs = collectDiscoData.disco.researchObjs;
-    let points = 0;
-    for(let i = 0; i < researchObjs.length; i++){
-        const roCollectors = researchObjs[i].collectors;
-        let exist = false;
-        for(let cl = 0; cl < roCollectors.length; cl++){
-            if(roCollectors[cl].researcherId == collectDiscoData.collector.researcherId){
-                exists = true;
-                break;
-            }
-        }
-        if(exist)
-            continue;
-        const contributors = researchObjs[i].contributors;
-        for(let ct = 0; ct < contributors.length; ct++){
-            if(contributors[cl].researcherId == collectDiscoData.collector.researcherId){
-                exists = true;
-                break;
-            }
-        }
-        if(!exits)
-            throw new Error("Researcher dont have research object " + researchObjs[i.researchObjId]);
-    }
-
-    const balance = createDiscoData.creator.wallet;
-    // new balance
-    createDiscoData.creator.wallet = balance + points;
-    // check if researcher already claims the research object
-    const factory = getFactory();
-    const disco = factory.newResource('org.bforos', 'Disco', createDiscoData.discoId);
-    disco.title = createDiscoData.title;
-    disco.researchObjs = researchObjs;
-    disco.owner = createDiscoData.creator;
-    disco.collectors = [];
-    // 1. update asset registry
-    let assetRegistry = await getAssetRegistry('org.bforos.Disco');
-    await assetRegistry.add(disco);
-    // 2. update researcher registry
-    let participantRegistry = await getParticipantRegistry('org.bforos.Researcher');
-    await participantRegistry.update(createDiscoData.creator);
-    // Emit an event for the modified participant wallet.
-}
-
+async function createDisco(createDiscoData) {
+    // define reward for claiming objetc
+      const points = 1;
+      const balance = createDiscoData.creator.wallet;
+      // new balance
+      createDiscoData.creator.wallet = balance + points;
+      // check if researcher already claims the research object
+      const factory = getFactory();
+      const disco = factory.newResource('org.bforos', 'Disco', createDiscoData.discoId);
+      disco.title = createDiscoData.title;
+      disco.researchObjs = createDiscoData.researchObjs;
+      disco.owner = createDiscoData.creator;
+      disco.collectors = [];
+      // 1. update asset registry
+      let assetRegistry = await getAssetRegistry('org.bforos.Disco');
+      await assetRegistry.add(disco);
+      // 2. update researcher registry
+      let participantRegistry = await getParticipantRegistry('org.bforos.Researcher');
+      await participantRegistry.update(createDiscoData.creator);
+      // Emit an event for the modified participant wallet.
+      let event = getFactory().newEvent('org.bforos', 'WalletEvent');
+      event.claimer = createDiscoData.creator;
+      event.operation = "CREATE";
+      event.oldBalance = balance;
+      event.newBalance = balance + points;
+      emit(event);
+  }
+  
 /**
 * Claim a Research object after it is created
 * all contributors recieve a reward on succesefully claimed Ro's
